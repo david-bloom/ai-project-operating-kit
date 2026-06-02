@@ -71,6 +71,25 @@ Relevant records may include:
 - Feature docs.
 - QA notes.
 
+## Optional Manual Sync Handshake
+
+Projects may define a short manual trigger that tells an agent to re-sync from the source of truth before continuing.
+
+Recommended example:
+
+```text
+C / c
+```
+
+When the owner sends the configured trigger, the agent should:
+
+- Re-read current GitHub source-of-truth docs, task files, issues, and activity/approval logs relevant to the active work.
+- Report current task or issue state, approval state, blockers, and next recommended action.
+- Produce or refresh a handoff packet when execution, QA, frontend handoff, or side-agent coordination is next.
+- Treat the trigger as a sync/review instruction only.
+
+The manual sync handshake does not authorize implementation, deployment, migration, secret changes, task closure, QA pass decisions, Done decisions, risk acceptance, or production launch. Those actions still require the normal approval path.
+
 ## Startup Rule
 
 At session start, agents should read relevant current GitHub docs before execution.
