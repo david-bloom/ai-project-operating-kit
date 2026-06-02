@@ -25,6 +25,8 @@ Then report:
 5. Next recommended action for Codex.
 6. Handoff packet if execution, QA, frontend handoff, or side-agent coordination is next.
 
+Optional manual sync handshake: if the owner sends the configured trigger, for example "C" or "c", re-read the current GitHub source-of-truth docs/issues/logs for the active work and report state, blockers, approval boundaries, and next action. Treat the trigger as sync/review only, not approval to execute.
+
 Do not implement code, revise task scope, deploy, apply migrations, mark QA passed, close tasks/issues, or mark tasks Done until the required approval state is confirmed and recorded in GitHub.
 ```
 
