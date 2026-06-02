@@ -29,6 +29,8 @@ Use the project operating model:
 - QA Agent proposes findings only.
 - UX / Prompt Agent handles frontend prompts and route behavior where relevant.
 
+Optional manual sync handshake: if the owner sends the configured trigger, for example "C" or "c", re-read the current GitHub source-of-truth docs/issues/logs for the active work and report state, blockers, approval boundaries, and next action. Treat the trigger as sync/review only, not approval to execute.
+
 Follow standing approval lanes. Stop at hard gates.
 ```
 
