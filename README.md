@@ -16,6 +16,16 @@ This kit helps prevent:
 - Repeated re-orientation at the start of every session.
 - The human project owner becoming the memory and coordination bottleneck.
 
+## Optional Manual Sync Handshake
+
+The kit supports an optional short trigger, such as `C` or `c`, that means:
+
+```text
+Re-read the current source-of-truth docs/issues/logs and report state before continuing.
+```
+
+This is useful when the owner wants an agent to refresh from durable project records without restating the full workflow. The trigger is sync/review only; it does not authorize execution, deployment, approval, closure, risk acceptance, or launch.
+
 ## Contents
 
 ```text
