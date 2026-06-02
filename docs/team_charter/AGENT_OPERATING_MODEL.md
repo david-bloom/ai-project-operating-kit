@@ -74,6 +74,19 @@ Use for:
 - Design-system risks.
 - Client/backend contract clarity.
 
+## Manual Sync Handshake
+
+If the project enables an optional manual sync handshake, such as `C` or `c`, agents treat it as a request to refresh from source-of-truth records and report state.
+
+The main conductor should use the handshake to:
+
+- Re-read relevant GitHub docs, task files, issues, and logs.
+- Confirm approval boundaries.
+- Identify blockers and next action.
+- Decide whether a handoff packet or side-agent review is needed.
+
+Side agents and QA agents may respond to the handshake with evidence and proposed findings only. The handshake does not grant authority to execute, publish, approve, close, mark passed, or launch.
+
 ## Anti-Patterns
 
 - Asking side agents to review the whole task.
