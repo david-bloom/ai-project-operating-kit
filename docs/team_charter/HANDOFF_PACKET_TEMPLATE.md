@@ -1,10 +1,15 @@
 # [PROJECT_NAME] Handoff Packet Template
 
-Use before execution, QA, frontend handoff, complex delegation, or task owner changes.
+Use before execution, QA, frontend handoff, complex delegation, or task owner changes — for `Standard` and `Hard-Gate` tier work. `Micro` tier tasks (see `AGENT_OPERATING_MODEL.md`, Task Tiers) skip this template entirely.
 
 ```text
 Task:
 - TASK-XXXX — Title
+
+Prompts Included:
+- [ ] Implementation Agent
+- [ ] QA Agent
+- [ ] UX / Prompt Agent
 
 Current Source:
 - Task doc:
@@ -45,6 +50,8 @@ Next Expected Output:
 - Required files to update:
 - Required evidence:
 
+Include only the prompt(s) for the agent(s) checked in `Prompts Included` above. Omit the others entirely — do not leave empty triple-quoted blocks or placeholder text.
+
 Recommended Prompt for Implementation Agent:
 """
 [Paste concise execution instruction here.]
@@ -60,4 +67,3 @@ Recommended Prompt for UX / Prompt Agent:
 [Paste concise frontend/prompt instruction here.]
 """
 ```
-
