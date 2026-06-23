@@ -1,44 +1,11 @@
-# [PROJECT_NAME] Skills Guide
+# [PROJECT_NAME] Tool and Integration Guide
 
 **Status:** Draft / Approved  
 **Owner:** [OWNER_NAME]
 
 ## Purpose
 
-Define project-specific skill equivalents that agents should follow even when local skills are unavailable.
-
-## Skill Equivalent: Source of Truth
-
-Use for:
-
-- Docs.
-- Task state.
-- Issues.
-- Activity logs.
-- Approval records.
-- Handoff packets.
-
-Rules:
-
-- Source-of-truth docs override chat memory.
-- Read relevant task/docs before executing.
-- Preserve approval boundaries.
-
-## Skill Equivalent: Implementation / Live State
-
-Use for:
-
-- Source code.
-- Schema/data.
-- Services.
-- Logs.
-- Live QA.
-
-Rules:
-
-- Read source-of-truth docs first.
-- Live state is authority for deployed/runtime behavior.
-- Do not change live state without approval.
+This guide covers project-specific tool and integration skills only. Role definitions, agent boundaries, source-of-truth rules, and QA process live in `AI_COLLABORATION_RULES.md` and `AGENT_OPERATING_MODEL.md` — not here. (This file was renamed from `SKILLS_GUIDE.md`; its previous "Source of Truth," "Implementation / Live State," and "QA" sections were removed because they duplicated role rules already defined canonically elsewhere — a second copy of a role rule drifts from the first, and an agent that reads only this file because the task looked technical would miss updates made to the canonical doc.)
 
 ## Skill Equivalent: Payments / Integrations
 
@@ -93,17 +60,3 @@ Rules:
 - Frontend does not own trust decisions.
 - Backend/status APIs own gates.
 - UI hiding is not security.
-
-## Skill Equivalent: QA
-
-Use for:
-
-- Ready-for-QA tasks.
-- Re-QA.
-- Evidence review.
-
-Rules:
-
-- QA proposes findings.
-- Main conductor owns final verdict.
-- QA pass does not approve launch.
