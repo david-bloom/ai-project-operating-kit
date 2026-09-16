@@ -177,6 +177,8 @@ This complements, not replaces, per-task Handoff Packets: a Handoff Packet moves
 
 The spoken/typed cue for the Startup Rule above, for any tool given a new-session prompt from this kit — not only ones that apply the rule automatically. Same convention as `SYNC` above: a full word, uppercase, standalone — not a single character, which is too easy to fire by accident.
 
+**GitHub is the source of truth for every tool, not just whichever one has been running longest.** Per the Source-of-Truth Rule above: if it is not written in GitHub, it does not exist for operating purposes, regardless of what any tool's own chat history says. `SESSION START` exists specifically so a tool with no built-in habit of reading the repo first is told, in words it will act on, to treat the repo as authoritative before doing anything — and if something said earlier in chat conflicts with what's in the repo, the repo wins.
+
 Trigger:
 
 ```text
