@@ -12,6 +12,7 @@ AI agents move faster when the project has durable memory and clear authority bo
 - Agents executing before approval.
 - QA agents acting as final approvers.
 - Repeated re-orientation at the start of every session.
+- A session ending with no record of what happened, what's still pending, or what's next — leaving the next session (or the next person) to reconstruct it from chat history that may not exist anymore.
 - The human project owner becoming the memory and coordination bottleneck — including the version of that bottleneck where every routine approval, not just the hard ones, has to pass through one person.
 - Self-reported "synced" or "done" claims standing in for an actual check.
 - Heavy process ceremony applied to small, reversible, low-risk work.
@@ -69,6 +70,7 @@ PROJECT_SETUP.md
 4. Give Claude/Codex the relevant new-session prompt.
 5. Use handoff packets before execution, QA, frontend handoff, or side-agent work — for `Standard`/`Hard-Gate` tier work; `Micro` tier skips them.
 6. Use `scripts/verify-sync.sh` instead of trusting a narrated "synced" claim before reporting sync complete.
+7. Write a `docs/activity_log/ACTIVITY_LOG.md` entry before ending any session that changed durable state — summary, pending decisions, open risks/blockers, and the next required action, so a brand-new session can pick up cold. See the Session Close Rule in `AI_COLLABORATION_RULES.md`.
 
 ## Core Pattern
 

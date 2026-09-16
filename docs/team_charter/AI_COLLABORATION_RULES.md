@@ -155,3 +155,20 @@ docs/architecture/, if present
 docs/features/, if present
 docs/flows/, if present
 ```
+
+## Session Close Rule
+
+Before ending a work session — not only when a task hits a status checkpoint — write one entry to `docs/activity_log/ACTIVITY_LOG.md` (format in that file) summarizing it, so a **completely new session with no memory of this one** can pick up the work without reading the prior conversation. This is the counterpart to the Startup Rule above: Startup tells a new session what to read; Session Close is what the ending session leaves behind for it to read.
+
+Mandatory whenever the session changed any durable state — code, docs, task status, a decision, an approval, a handoff. A session that only answered questions or explored without changing anything may skip it.
+
+The entry must cover, beyond a bare status update:
+
+- **Summary** — what happened, in enough detail that a fresh reader doesn't need the conversation.
+- **Pending decisions** — anything raised but not yet decided, and who needs to decide it. State `None` explicitly rather than omitting the field, so a reader can tell "checked, nothing pending" from "not filled in."
+- **Open risks / blockers** — anything that could derail the next session if not flagged. `None` explicitly if there aren't any.
+- **Next required action** — the concrete next step, not "continue work."
+
+Push before ending the session (per the Push cadence rule above) and verify sync (`scripts/verify-sync.sh`) before considering the session closed. An `ACTIVITY_LOG` entry that isn't actually on the remote doesn't help the next session — it only helps if the next session can read it from GitHub.
+
+This complements, not replaces, per-task Handoff Packets: a Handoff Packet moves work between agents/roles mid-task; a Session Close entry closes out a human working session, whether or not a handoff is also happening in it.

@@ -116,3 +116,7 @@ Use handoff packets before:
 - Task owner changes.
 
 Skip the handoff packet for `Micro`-tier work.
+
+## 11. Confirm the Session Close Rule Is Followed
+
+Before ending any session that changed durable state, write an `ACTIVITY_LOG.md` entry (format in that file) — summary, pending decisions, open risks/blockers, next required action — so a brand-new session can pick up without the prior conversation. See `docs/team_charter/AI_COLLABORATION_RULES.md`, Session Close Rule. This is not optional ceremony reserved for `Hard-Gate` work; it applies whenever anything durable changed, at any tier.
