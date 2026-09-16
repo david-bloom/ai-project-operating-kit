@@ -172,3 +172,37 @@ The entry must cover, beyond a bare status update:
 Push before ending the session (per the Push cadence rule above) and verify sync (`scripts/verify-sync.sh`) before considering the session closed. An `ACTIVITY_LOG` entry that isn't actually on the remote doesn't help the next session — it only helps if the next session can read it from GitHub.
 
 This complements, not replaces, per-task Handoff Packets: a Handoff Packet moves work between agents/roles mid-task; a Session Close entry closes out a human working session, whether or not a handoff is also happening in it.
+
+## Session Start Trigger — `SESSION START`
+
+The spoken/typed cue for the Startup Rule above, for any tool given a new-session prompt from this kit — not only ones that apply the rule automatically. Same convention as `SYNC` above: a full word, uppercase, standalone — not a single character, which is too easy to fire by accident.
+
+Trigger:
+
+```text
+SESSION START
+```
+
+When given, the agent should:
+
+- Read the docs listed in the Startup Rule.
+- Read the most recent entries in `docs/activity_log/ACTIVITY_LOG.md` (Index), especially the last Session Close entry, to pick up its Pending Decisions and Open Risks/Blockers.
+- Report: current task/project state, anything carried over from the last Session Close entry, and the next required action — before doing anything else.
+
+## Session Close Trigger — `SESSION CLOSE`
+
+The spoken/typed cue for the Session Close Rule above.
+
+Trigger:
+
+```text
+SESSION CLOSE
+```
+
+When given, the agent should:
+
+- Write the `ACTIVITY_LOG.md` entry per its Entry Format — Summary, Pending Decisions, Open Risks/Blockers, Next Required Action, each explicit (`None` rather than omitted).
+- Push and verify sync (`scripts/verify-sync.sh`) if it has repo write access; otherwise output the entry content clearly labeled with its destination path for a human to commit.
+- State plainly whether it was actually written to the repo or handed back for manual commit — don't leave that ambiguous.
+
+`SESSION START`, `SESSION CLOSE`, and `SYNC` are three distinct triggers, not synonyms: `SESSION START` orients at the very beginning of a session, `SYNC` refreshes mid-session without a full close-out, and `SESSION CLOSE` wraps up before stopping.

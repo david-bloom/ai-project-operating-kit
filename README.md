@@ -27,6 +27,10 @@ Re-read the current source-of-truth docs/issues/logs and report state before con
 
 This is useful when the owner wants an agent to refresh from durable project records without restating the full workflow. The trigger is sync/review only; it does not authorize execution, deployment, approval, closure, risk acceptance, or launch.
 
+## Session Start / Session Close Triggers
+
+Same convention as `SYNC`, for the two other moments that matter most: `SESSION START` tells an agent to orient from the Startup Rule plus the last Session Close entry before doing anything; `SESSION CLOSE` tells it to write that session's `ACTIVITY_LOG.md` entry (Summary, Pending Decisions, Open Risks/Blockers, Next Required Action) before stopping. Works the same way in any tool given a new-session prompt from this kit — Claude, Codex, or otherwise — not just ones that apply the rule automatically. See `docs/team_charter/AI_COLLABORATION_RULES.md`.
+
 ## Task Tiers
 
 Every task gets a tier — `Micro`, `Standard`, or `Hard-Gate` — that determines how much process applies. A one-line reversible fix and a production migration should not go through the same ceremony. See `docs/team_charter/AGENT_OPERATING_MODEL.md`.

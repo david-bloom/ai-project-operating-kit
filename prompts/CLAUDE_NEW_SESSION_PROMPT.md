@@ -35,5 +35,9 @@ Model/effort: use the fast/default tier for drafting and routine work; reserve t
 
 Manual sync handshake: if the owner sends SYNC, re-read the current GitHub source-of-truth docs/issues/logs (including docs/team_charter/CHANGELOG.md for anything new) for the active work and report state, blockers, approval boundaries, and next action. Treat the trigger as sync/review only, not approval to execute.
 
+If the owner sends SESSION START, do the full orientation above plus read the last Session Close entry in docs/activity_log/ACTIVITY_LOG.md and carry forward its Pending Decisions and Open Risks/Blockers into your report.
+
+If the owner sends SESSION CLOSE, write that session's docs/activity_log/ACTIVITY_LOG.md entry per its Entry Format (Summary, Pending Decisions, Open Risks/Blockers, Next Required Action — each explicit, "None" rather than omitted), push it, and confirm sync. See docs/team_charter/AI_COLLABORATION_RULES.md, Session Close Rule.
+
 Follow standing approval lanes. Ambiguous-but-reversible work gets a clarifying question, not an automatic hard gate. Stop at hard gates.
 ```
