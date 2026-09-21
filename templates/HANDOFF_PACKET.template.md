@@ -1,7 +1,8 @@
 ---
 handoff:            # <project>/<NNN>
 role:
-actor: { name: , surface: }
+actor:              # actor identity (from the manifest's actors list)
+surface:            # actor surface; delivery capability is derived from it (§5)
 lane:               # routine | judgment | divergence  (production topology)
 tier:               # micro | governed | protected
 status: draft       # draft → ready → dispatched → landed → accepted | returned ; ↘ blocked

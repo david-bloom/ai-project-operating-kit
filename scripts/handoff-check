@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+# handoff-check — validate a handoff packet against docs/CORE_OPERATING_POLICY.md.
+#
+# usage: scripts/handoff-check <packet-path> [--dry-run] [--no-fetch] [--manifest <path>]
+#
+# draft      -> full validation; on pass (not dry-run) stamps source_sha and sets status: ready
+# ready      -> full validation (re-check)
+# dispatched -> validation + freeze check against frozen_hash
+# later      -> freeze check + report only
+# exit 0 = pass, 1 = fail, 2 = usage/error
+#
+# Generalized (Increment 1b): actors, roles, source-of-truth branch, output
+# layout and protection come from the PROJECT MANIFEST + config registries, not
+# hard-coded. Unproven until the Increment 2 fixtures pass (docs/BUILD_STATUS.md).
+set -eo pipefail
+cd "$(git rev-parse --show-toplevel)"
+. scripts/lib/core.sh
+
+DRY=0; PKT=""; MANIFEST_ARG=""
+[ $# -ge 1 ] || die "usage: handoff-check <packet-path> [--dry-run] [--no-fetch] [--manifest <path>]"
+PKT=$1; shift
+while [ $# -gt 0 ]; do case $1 in
+  --dry-run) DRY=1;; --no-fetch) NO_FETCH=1;; --manifest) MANIFEST_ARG=$2; shift;;
+  *) die "unknown flag $1";; esac; shift; done
+[ -f "$PKT" ] || die "no such file: $PKT"
+PKT=${PKT#./}
+
+resolve_manifest "$MANIFEST_ARG"
+echo "handoff-check $PKT  (project $PROJECT, core $POLICY_VERSION, sot origin/$SOT_BRANCH$( [ $DRY = 1 ] && echo ', dry-run'))"
+fetch_sot
+
+# 1. header present and parseable
+hdr_present "$PKT" || { fail "no YAML front matter (first line must be ---)"; echo "FAIL ($FAILS)"; exit 1; }
+ID=$(hdr_get "$PKT" handoff); ROLE=$(hdr_get "$PKT" role); STATUS=$(hdr_get "$PKT" status)
+LANE=$(hdr_get "$PKT" lane); TIER=$(hdr_get "$PKT" tier); ACTOR=$(hdr_get "$PKT" actor)
+SURFACE=$(hdr_get "$PKT" surface); MODEL=$(hdr_get "$PKT" model)
+ISO=$(hdr_get "$PKT" isolation); REQREV=$(hdr_get "$PKT" required_reviews); REVOF=$(hdr_get "$PKT" review_of)
+SUP=$(hdr_get "$PKT" supersedes); LEGACY=$(hdr_get "$PKT" legacy); SRC=$(hdr_get "$PKT" source_sha)
+FROZEN=$(hdr_get "$PKT" frozen_hash); MSHA=$(hdr_get "$PKT" manifest_sha)
+read_into INPUTS hdr_list "$PKT" inputs; read_into OUTPUTS hdr_list "$PKT" outputs
+
+for k in handoff role status lane tier actor; do
+  [ -n "$(hdr_get "$PKT" $k)" ] && ok "header: $k = $(hdr_get "$PKT" $k)" || fail "header: missing $k"
+done
+in_list "$ROLE"   $ROLES        || fail "role '$ROLE' not in: $ROLES"
+in_list "$STATUS" $CORE_STATUSES|| fail "status '$STATUS' not in: $CORE_STATUSES"
+in_list "$LANE"   $CORE_LANES   || fail "lane '$LANE' not in: $CORE_LANES"
+in_list "$TIER"   $CORE_TIERS   || fail "tier '$TIER' not in: $CORE_TIERS"
+in_list "$ACTOR"  $ACTORS       || fail "actor '$ACTOR' not in: $ACTORS"
+
+# actor surface must exist and carry a delivery capability (§5)
+if [ -n "$SURFACE" ]; then
+  DELIV=$(delivery_for "$ACTOR" "$SURFACE")
+  [ -n "$DELIV" ] && ok "delivery: $ACTOR/$SURFACE = $DELIV" || fail "actor '$ACTOR' has no surface '$SURFACE' in the manifest"
+else
+  warn "no actor surface declared (delivery capability cannot be resolved; §5)"
+fi
+
+if in_list "$LANE" judgment divergence && { [ -z "$MODEL" ] || [ "$MODEL" = unspecified ]; }; then
+  warn "lane $LANE: model is 'unspecified' (required for diversity; set at dispatch with --model)"
+fi
+
+# tier -> review requirement (§4): governed/protected PRODUCING work must carry an
+# independent review. A review handoff (review_of set) is itself the review and is exempt.
+[ -n "$REQREV" ] || REQREV=none
+REVOF_EARLY=$(hdr_get "$PKT" review_of); [ -n "$REVOF_EARLY" ] || REVOF_EARLY=none
+in_list "$REQREV" none independent || fail "required_reviews '$REQREV' not in: none independent"
+if [ "$REVOF_EARLY" = none ] && in_list "$TIER" governed protected && [ "$REQREV" != independent ]; then
+  fail "tier $TIER requires required_reviews: independent (§4)"
+fi
+[ "$TIER" = protected ] && ok "tier protected: approval gates enforced by publish at the mapped transitions (§8)"
+
+# isolation shape (§7): 'open' or 'withhold ... lift_when ...'
+[ -n "$ISO" ] || ISO=open
+case "$ISO" in
+  open) ok "isolation: open" ;;
+  *withhold*) echo "$ISO" | grep -q "lift_when" && ok "isolation: scoped withhold with a lift event" \
+                || fail "isolation withhold must name a lift_when event (§7)" ;;
+  *) fail "isolation '$ISO' must be 'open' or a withhold/lift_when map (§7)" ;;
+esac
+
+# review_of target (§4): a review handoff points back at the reviewed handoff
+[ -n "$REVOF" ] || REVOF=none
+if [ "$REVOF" != none ]; then
+  packet_from_id "$REVOF" >/dev/null 2>&1 && ok "review_of $REVOF exists" || fail "review_of '$REVOF' not found"
+fi
+
+# 2. filename / id agreement
+if path_parts "$PKT"; then
+  [ "$ID" = "$SLUG/$NNN" ] || fail "handoff id '$ID' != path-derived '$SLUG/$NNN'"
+  [ "$ROLE" = "$FROLE" ]   || fail "role '$ROLE' != filename role '$FROLE'"
+  ok "filename agrees with header ($SLUG/$NNN, $ROLE)"
+else
+  fail "path must be $PROJECTS_ROOT/<slug>/handoff/<NNN>-<role>.md"
+fi
+
+# 3. supersedes target must exist
+[ -n "$SUP" ] || SUP=none
+if [ "$SUP" != none ]; then
+  packet_from_id "$SUP" >/dev/null 2>&1 && ok "supersedes $SUP exists" || fail "supersedes '$SUP' not found"
+fi
+
+# 4. inputs available on the source-of-truth branch
+[ ${#INPUTS[@]} -gt 0 ] || warn "no inputs declared"
+for p in "${INPUTS[@]}"; do if on_sot "$p"; then ok "input on $SOT_BRANCH: $p"; elif [ "$LEGACY" = true ]; then warn "input not on $SOT_BRANCH (legacy): $p"; else fail "input NOT on $SOT_BRANCH: $p"; fi; done
+
+# 5. outputs: path policy and collision (re-delivery / revision authorized by header)
+[ ${#OUTPUTS[@]} -gt 0 ] || fail "no outputs declared"
+SUPPKT=""; SUPSTATUS=""; declare -a SUPOUT=()
+if [ "$SUP" != none ] && SUPPKT=$(packet_from_id "$SUP" 2>/dev/null); then SUPSTATUS=$(hdr_get "$SUPPKT" status); read_into SUPOUT hdr_list "$SUPPKT" outputs; fi
+REV=$(hdr_get "$PKT" revises); [ -n "$REV" ] || REV=none
+REVPKT=""; REVSTATUS=""; declare -a REVOUT=()
+if [ "$REV" != none ]; then
+  if REVPKT=$(packet_from_id "$REV" 2>/dev/null); then REVSTATUS=$(hdr_get "$REVPKT" status); read_into REVOUT hdr_list "$REVPKT" outputs
+    in_list "$REVSTATUS" landed accepted && ok "revises $REV ($REVSTATUS)" || fail "revises '$REV' must be a landed or accepted handoff (is $REVSTATUS)"
+  else fail "revises '$REV' not found"; fi
+fi
+redeliverable() { { in_list "$SUPSTATUS" returned blocked && in_list "$1" "${SUPOUT[@]}"; } || { in_list "$REVSTATUS" landed accepted && in_list "$1" "${REVOUT[@]}"; }; }
+for p in "${OUTPUTS[@]}"; do
+  case "$p" in "$PROJECTS_ROOT/$SLUG/"*) ;; *) fail "output outside $PROJECTS_ROOT/$SLUG/: $p";; esac
+  case "$STATUS" in
+    draft|ready|dispatched)
+      if on_sot "$p"; then
+        if redeliverable "$p"; then ok "output overwrites an existing deliverable (re-delivery of $SUP / revision of $REV): $p"
+        elif [ "$LEGACY" = true ]; then warn "output already on $SOT_BRANCH (legacy): $p"
+        else fail "output collision (already on $SOT_BRANCH): $p (declare supersedes: <returned|blocked> to re-deliver, or revises: <accepted> to revise)"; fi
+      fi ;;
+    landed|accepted)
+      on_sot "$p" && ok "output on $SOT_BRANCH: $p" || fail "status $STATUS but output not on $SOT_BRANCH: $p" ;;
+  esac
+done
+
+# 6. body path references must be available (branch-only or phantom refs fail)
+while IFS= read -r ref; do
+  [ -z "$ref" ] && continue
+  in_list "$ref" "${OUTPUTS[@]}" && continue
+  if on_sot "$ref"; then :; else
+    if [ "$LEGACY" = true ]; then warn "body references path not on $SOT_BRANCH (legacy): $ref"
+    else fail "body references path not on $SOT_BRANCH: $ref"; fi
+  fi
+done < <(body_path_refs "$PKT")
+
+# 7. completed handoffs are never re-run (at-most-once by id, §10)
+case "$STATUS" in
+  landed|accepted|returned|superseded) ok "status $STATUS: completed; nothing to dispatch (write a new handoff for new work)";;
+esac
+
+# 8. source_sha / manifest_sha / freeze
+if [ -n "$SRC" ]; then
+  git cat-file -e "$SRC^{commit}" 2>/dev/null && git merge-base --is-ancestor "$SRC" "origin/$SOT_BRANCH" 2>/dev/null \
+    && ok "source_sha $SRC is on $SOT_BRANCH" || fail "source_sha '$SRC' is not a commit on $SOT_BRANCH"
+fi
+if [ -n "$MSHA" ]; then
+  git cat-file -e "$MSHA^{commit}" 2>/dev/null && git merge-base --is-ancestor "$MSHA" "origin/$SOT_BRANCH" 2>/dev/null \
+    && ok "manifest_sha $MSHA is on $SOT_BRANCH" || fail "manifest_sha '$MSHA' is not a commit on $SOT_BRANCH"
+fi
+if in_list "$STATUS" dispatched landed accepted returned; then
+  if [ -z "$FROZEN" ]; then
+    [ "$LEGACY" = true ] && warn "no frozen_hash (legacy)" || fail "status $STATUS but no frozen_hash"
+  else
+    [ "$(frozen_hash "$PKT")" = "$FROZEN" ] && ok "frozen body/header intact" \
+      || fail "packet role/lane/tier/isolation/inputs/outputs or frozen body changed after dispatch (only '## Amendments' may change)"
+  fi
+fi
+
+# 9. transition: draft -> ready
+if [ $FAILS -eq 0 ] && [ "$STATUS" = draft ]; then
+  if [ $DRY = 1 ]; then ok "would set status: ready, source_sha: $(sot_sha)"
+  else hdr_set "$PKT" source_sha "$(sot_sha)"; hdr_set "$PKT" status ready
+       ok "set status: ready, source_sha: $(sot_sha) (working tree only; commit with: publish $ID --actor <you>)"; fi
+fi
+
+echo "---"; if [ $FAILS -eq 0 ]; then echo "PASS  $ID  status=$(hdr_get "$PKT" status)  warnings=$WARNS"; exit 0
+else echo "FAIL  $ID  failures=$FAILS warnings=$WARNS"; exit 1; fi
