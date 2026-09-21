@@ -1,0 +1,25 @@
+# Actor registry (example). An actor is a tool identity; each has one or more
+# surfaces; each surface declares a delivery capability (core §5).
+# Copy/trim per project into the manifest's `actors:` list.
+
+actors:
+  - name: claude-code
+    surfaces:
+      - { surface: local,  delivery: publisher }   # local clone, can write source-of-truth
+      - { surface: web,    delivery: branch }       # branch-bound web session
+  - name: codex            # "GPT-Sol"
+    surfaces:
+      - { surface: local,  delivery: publisher }
+      - { surface: cloud,  delivery: branch }       # can push a branch, not source-of-truth
+  - name: grok
+    surfaces:
+      - { surface: default, delivery: branch }
+  - name: claude-design    # canvas; no GitHub write
+    surfaces:
+      - { surface: default, delivery: airlock }
+  - name: automation       # scheduled/CI runs: produce evidence only
+    surfaces:
+      - { surface: ci, delivery: branch, authority: none }   # cannot accept/approve/decide Done
+  - name: david            # human Owner / Done-Decider (not a delivery surface)
+    surfaces:
+      - { surface: human, delivery: n/a }
