@@ -16,6 +16,9 @@
 # ---------------------------------------------------------------- core floor
 # Fixed by docs/CORE_OPERATING_POLICY.md. A project may ADD protection/gates
 # (monotonic, §6); it may never remove or redefine these.
+# CORE_VERSION is this engine's implemented policy version. A manifest whose
+# core.version has a different MAJOR is incompatible (refused at resolve).
+CORE_VERSION="3.0"
 CORE_STATUSES="draft ready dispatched landed accepted returned blocked superseded"
 CORE_LANES="routine judgment divergence"
 CORE_TIERS="micro governed protected"
@@ -94,6 +97,10 @@ resolve_manifest() {
 
   PROJECT=$(yget "$MANIFEST" project);                 [ -n "$PROJECT" ] || die "manifest: project is required"
   POLICY_VERSION=$(yget "$MANIFEST" core.version);      [ -n "$POLICY_VERSION" ] || POLICY_VERSION="unspecified"
+  # version compatibility (§ core/profile pinning): same MAJOR as this engine
+  if [ "$POLICY_VERSION" != unspecified ] && [ "${POLICY_VERSION%%.*}" != "${CORE_VERSION%%.*}" ]; then
+    die "incompatible core version: manifest pins core $POLICY_VERSION but this engine implements $CORE_VERSION (different major)"
+  fi
   SOT_BRANCH=$(yget "$MANIFEST" source_of_truth.branch);[ -n "$SOT_BRANCH" ] || SOT_BRANCH=main
   SOT_REPO=$(yget "$MANIFEST" source_of_truth.repo)
   OWNER=$(yget "$MANIFEST" owner)
@@ -133,17 +140,27 @@ core_roles() {  # keys under `roles:` in config/roles.yaml
     || echo "owner orchestrator specialist reviewer steward"
 }
 
-mf_actors() {  # file -> "actor surface delivery" per surface row
+mf_actors() {  # file -> "actor surface delivery authority" per surface row (authority defaults 'full')
   awk '
     /^actors:/ { inb=1; next }
     inb && /^[^ -]/ { inb=0 }
     inb && /^  - / {
-      a=""; s=""; d=""
-      if (match($0,/actor:[ ]*[A-Za-z0-9._-]+/))   { t=substr($0,RSTART,RLENGTH); sub(/actor:[ ]*/,"",t);   a=t }
-      if (match($0,/surface:[ ]*[A-Za-z0-9._-]+/)) { t=substr($0,RSTART,RLENGTH); sub(/surface:[ ]*/,"",t); s=t }
-      if (match($0,/delivery:[ ]*[A-Za-z0-9._-]+/)){ t=substr($0,RSTART,RLENGTH); sub(/delivery:[ ]*/,"",t);d=t }
-      if (a!="") print a, s, d
+      a=""; s=""; d=""; au="full"
+      if (match($0,/actor:[ ]*[A-Za-z0-9._-]+/))    { t=substr($0,RSTART,RLENGTH); sub(/actor:[ ]*/,"",t);    a=t }
+      if (match($0,/surface:[ ]*[A-Za-z0-9._-]+/))  { t=substr($0,RSTART,RLENGTH); sub(/surface:[ ]*/,"",t);  s=t }
+      if (match($0,/delivery:[ ]*[A-Za-z0-9._-]+/)) { t=substr($0,RSTART,RLENGTH); sub(/delivery:[ ]*/,"",t); d=t }
+      if (match($0,/authority:[ ]*[A-Za-z0-9._-]+/)){ t=substr($0,RSTART,RLENGTH); sub(/authority:[ ]*/,"",t);au=t }
+      if (a!="") print a, s, d, au
     }' "$1"
+}
+
+# actor_authority <actor> -> "none" if EVERY surface of the actor is authority:none,
+# else "full". An authority:none actor produces evidence only (§2): it cannot set
+# lifecycle state (dispatch/accept/return) or approve/decide.
+actor_authority() {
+  local a=$1 anyfull=0 seen=0 au
+  while read -r au; do seen=1; [ "$au" != none ] && anyfull=1; done < <(mf_actors "$MANIFEST" | awk -v a="$a" '$1==a {print $4}')
+  [ $seen = 1 ] && [ $anyfull = 0 ] && { echo none; return; }; echo full
 }
 
 mf_profiles() {  # file -> profile names (2-indent keys under `profiles:`)

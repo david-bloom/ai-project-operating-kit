@@ -154,6 +154,13 @@ if [ -n "$MSHA" ]; then
   git cat-file -e "$MSHA^{commit}" 2>/dev/null && git merge-base --is-ancestor "$MSHA" "origin/$SOT_BRANCH" 2>/dev/null \
     && ok "manifest_sha $MSHA is on $SOT_BRANCH" || fail "manifest_sha '$MSHA' is not a commit on $SOT_BRANCH"
 fi
+# manifest staleness (§4/§10): the manifest changed since dispatch. Frozen work is
+# unaffected by design; surface it as a warning, never a failure.
+MHASH=$(hdr_get "$PKT" manifest_hash)
+if [ -n "$MHASH" ]; then
+  [ "$MHASH" = "$(manifest_hash)" ] && ok "manifest unchanged since dispatch" \
+    || warn "manifest changed since dispatch (frozen work is unaffected; §10)"
+fi
 if in_list "$STATUS" dispatched landed accepted returned; then
   if [ -z "$FROZEN" ]; then
     [ "$LEGACY" = true ] && warn "no frozen_hash (legacy)" || fail "status $STATUS but no frozen_hash"

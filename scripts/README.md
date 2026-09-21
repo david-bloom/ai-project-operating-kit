@@ -6,10 +6,15 @@ every project-specific parameter from a **project manifest** + the `config/`
 registries — nothing about actors, roles, branches, layout, protection or limits
 is hard-coded.
 
-**Status:** DRAFT, unproven until the Increment 2 conformance fixtures pass
-(`docs/BUILD_STATUS.md`). The happy path and the key gates have been smoke-tested
-in a throwaway git fixture (create → dispatch → land → accept, §4 review linkage,
-§8 approval gates, freeze/hashes, state generation); the fixtures formalize this.
+**Status:** DRAFT (Increment 1b + 2), validated by the conformance suite —
+`tests/run.sh`, **27/27 passing**. It exercises the lifecycle, delivery/landing,
+protection, approval gates, review linkage, tiers, isolation shape, actor
+authority, micro path, version compatibility, manifest staleness, rescue on a
+rejected push, and at-most-once publication. Run it before relying on any change:
+
+```
+tests/run.sh
+```
 
 ## Files
 
