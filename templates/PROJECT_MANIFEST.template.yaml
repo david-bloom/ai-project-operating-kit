@@ -1,0 +1,47 @@
+# Project Manifest — the single declared record of how a project runs.
+# Generated from the intake cascade. Parameters only; no operating rules
+# (those live in docs/CORE_OPERATING_POLICY.md and the profiles).
+
+schema_version: 0.3
+
+project:                     # short slug
+core:
+  version:                   # pinned core policy version this project runs against
+  source:                    # canonical core repo/package identity
+source_of_truth:
+  repo:
+  branch: main               # configurable; default main
+
+owner:                       # Owner / Done-Decider
+orchestrator:
+steward:                     # the ONE publisher-capable actor+surface for this run
+
+actors:                      # one row per actor SURFACE
+  - { actor: , surface: , delivery: airlock | branch | publisher }
+
+defaults:
+  tier: governed             # default work-item tier; a handoff may raise it
+  isolation: open            # default; a handoff resolves its own (see core §7)
+
+# Optional layout + limit overrides (the scripts default these; omit unless you need them).
+# paths:
+#   projects_root: projects  # where per-project trees live (handoffs, outputs)
+# limits:                    # size floor overrides (bytes); core §9
+#   image: 512000
+#   file: 2097152
+#   commit: 10485760
+# stale_hours: 48            # branch-staleness flag in the generated state file
+
+required_approvals:          # gates enforced at transitions (core §8). [] = none
+  before_dispatch: []
+  before_external_action: []
+  before_acceptance: []
+  before_done: []
+
+hard_gates: []               # structured gate ids added on top of the core floor
+protected_paths: []          # added on top of the core floor (monotonic; core §6)
+
+profiles:                    # active profiles + pinned versions + namespaced config
+  # design: { version: , config: { ... } }
+  # ux:     { version: , config: { ... } }
+  # qa:     { version: , config: { ... } }

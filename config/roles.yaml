@@ -1,0 +1,12 @@
+# Core role registry. Responsibilities, not tools. Profiles may ADD domain roles
+# (e.g. visual-designer, critic, usability-tester, qa-specialist) but may not
+# redefine these. See docs/CORE_OPERATING_POLICY.md §2–3.
+
+roles:
+  owner:         # Owner / Done-Decider — reserves Done, destructive/scope/constraint
+                 # changes, external publication, withheld-info reveal, unclassifiable.
+  orchestrator:  # owns flow: picks handoffs, sets lane/tier/isolation, dispatches,
+                 # sets accepted/returned. Never writes source-of-truth by hand.
+  specialist:    # produces exactly the declared outputs; sets no state.
+  reviewer:      # advisory only; own handoff; never overwrites reviewed work.
+  steward:       # the sole writer to the source-of-truth branch; runs the publisher.
