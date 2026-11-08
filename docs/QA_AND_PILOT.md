@@ -26,7 +26,11 @@ Fresh reviewer examined engine SHA-256
 and reproduced five defects despite the initial 40 passing tests:
 accepted-output micro revision, overlapping review outputs, falsey JSON CLI validation,
 return without artifact verification, boolean schema / control-character validation.
-All five were corrected and regression tests added. Exact-commit re-review is pending.
+All five were corrected and regression tests added. The exact-commit re-review of
+`7ee17b9f6fd58d7cfe0cd72b86ad0c05bdf9b702` found three further defects: Git revision
+option injection, committed symlink acceptance on the micro candidate route, and hidden
+worktree/commit byte mismatches. These were corrected with shared safe commit resolution,
+regular-file mode and exact-byte validation, plus regression tests. Final re-review pending.
 
 ## Disposable consumer pilot
 
@@ -41,6 +45,11 @@ The pilot does not certify host authentication, protected environments or consum
 
 ## Execution record
 
-Initial 40 unit tests passed on macOS / Python 3.12. Expanded suite and pilot are being
-verified. Native CI will exercise Linux/macOS on Python 3.11, 3.12 and 3.13.
-Final exact-commit results and independent disposition will be recorded before release.
+The expanded suite has 53 passing tests and nine passing pilot scenarios locally on
+macOS / Python 3.12. The earlier 50-test revision passed all six native CI combinations
+(Linux/macOS × Python 3.11/3.12/3.13), run 42513799322. Final revision CI and independent
+disposition will be recorded before release.
+
+This sandbox blocks DNS for Python subprocesses accessing GitHub; the real GitHub branch
+was verified through direct Git and the connector. Local bare-remote tests exercise the
+validator receipt itself. No cached remote was reported as a successful live verification.

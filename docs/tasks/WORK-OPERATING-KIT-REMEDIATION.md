@@ -5,7 +5,7 @@ Owner: David Bloom
 Conductor: Codex
 Tier: Hard-Gate (operating policy and release)
 Branch: `codex/operating-kit-remediation`
-PR: pending
+PR: #3 — https://github.com/david-bloom/ai-project-operating-kit/pull/3
 Baseline: `90250146632715ca169cfe59bb3f7f8bf0297e45`
 Approval: APPROVAL-0001; DECISION-0001
 

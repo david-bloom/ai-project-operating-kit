@@ -432,8 +432,27 @@ def git(repo, *args):
     return result.stdout
 
 
+def resolve_commit(repo, ref):
+    require(isinstance(ref, str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]*", ref) and ".." not in ref,
+            "unsafe revision operand")
+    resolved = git(repo, "rev-parse", "--verify", "--end-of-options", ref + "^{commit}").decode().strip()
+    require(re.fullmatch(r"[0-9a-f]{40,64}", resolved), "invalid resolved commit")
+    return resolved
+
+
+def committed_file(repo, commit, path):
+    safe_path(path)
+    entries = git(repo, "ls-tree", "-z", commit, "--", path).split(b"\0")
+    entries = [entry for entry in entries if entry]
+    require(len(entries) == 1, "commit path is not an exact regular file: " + path)
+    metadata, actual_path = entries[0].split(b"\t", 1)
+    require(actual_path.decode() == path and metadata.split()[0] in {b"100644", b"100755"}, "commit path is not a regular file: " + path)
+    return git(repo, "show", commit + ":" + path)
+
+
 def git_changes(repo, base, head):
-    tokens = git(repo, "diff", "--name-status", "-z", "--find-renames", base, head).decode().split("\0")
+    base, head = resolve_commit(repo, base), resolve_commit(repo, head)
+    tokens = git(repo, "diff", "--name-status", "-z", "--find-renames", base, head, "--").decode().split("\0")
     changes = []; i = 0
     while i < len(tokens) and tokens[i]:
         status, path = tokens[i], tokens[i + 1]; i += 2
@@ -445,12 +464,22 @@ def git_changes(repo, base, head):
     return changes
 
 
+def candidate_snapshot(repo, base, head):
+    require(not git(repo, "status", "--porcelain").strip(), "candidate requires clean committed workspace")
+    head = resolve_commit(repo, head)
+    require(resolve_commit(repo, "HEAD") == head, "candidate HEAD mismatch")
+    changes = git_changes(repo, base, head)
+    for c in changes:
+        if c["operation"] != "delete":
+            path = c["path"]
+            committed = committed_file(repo, head, path)
+            require(file_in(repo, path).read_bytes() == committed, "working bytes differ from committed bytes: " + path)
+    return head, changes
+
+
 def verify_candidate(p, m, root, repo, base, head, accepted):
     require(base and head, "base and head commits required for artifact transitions")
-    require(not git(repo, "status", "--porcelain").strip(), "candidate requires clean committed workspace")
-    actual_head = git(repo, "rev-parse", head).decode().strip()
-    require(git(repo, "rev-parse", "HEAD").decode().strip() == actual_head, "candidate HEAD mismatch")
-    changes = git_changes(repo, base, head)
+    actual_head, changes = candidate_snapshot(repo, base, head)
     require(sorted(changes, key=lambda x: x["path"]) == sorted(p["changes"], key=lambda x: x["path"]), "candidate diff differs from declared changes")
     require(TIERS.index(p["tier"]) >= TIERS.index(risk_tier(m, root, changes, p["risks"], accepted)), "candidate lowers derived risk")
     for c in changes:
@@ -471,9 +500,7 @@ def verify_remote(repo, remote, branch, commit, paths):
     verified = {}
     for p in paths:
         safe_path(p)
-        mode = git(repo, "ls-tree", commit, "--", p).decode().split()
-        require(mode and mode[0] in {"100644", "100755"}, "remote path is not a regular file: " + p)
-        verified[p] = digest(git(repo, "show", commit + ":" + p))
+        verified[p] = digest(committed_file(repo, commit, p))
     return {"remote_verified": True, "commit": commit, "branch": branch, "paths": verified,
             "integration": "not inferred", "acceptance": "not inferred", "release": "not inferred"}
 
@@ -520,10 +547,9 @@ def main():
                                 {"name": args.actor, "surface": args.surface}, e["approvals"], e["revocations"],
                                 e["reviews"], e["provenance"], dt.datetime.now(dt.timezone.utc), args.reason, e["related_packets"], accepted)
         else:
-            require(not git(args.repo, "status", "--porcelain").strip(), "candidate requires clean committed workspace")
             accepted = read_json(args.accepted_outputs); strings(accepted, "accepted output paths")
             for path in accepted: safe_path(path)
-            changes = git_changes(args.repo, args.base, args.head)
+            _, changes = candidate_snapshot(args.repo, args.base, args.head)
             derived = risk_tier(m, args.policy_root, changes, args.risks, accepted)
             require(TIERS.index(args.tier) >= TIERS.index(derived), "declared tier lowers derived risk")
             result = {"policy_check": "passed", "changes": changes, "minimum_tier": derived,

@@ -1,53 +1,19 @@
-# TASK-0000 — Task Title
+# Work item
 
-**Task ID:** TASK-0000  
-**Title:**  
-**Owner:**  
-**Tier:** Micro / Standard / Hard-Gate  
-**Status:** Not Started  
-**Priority:** Low / Medium / High / Critical  
-**Created Date:** YYYY-MM-DD  
-**Approved Date:** Pending
+Status: draft / in progress / review / blocked / accepted / done (task status, separate from handoff status)
+Owner:
+Tier: micro / governed / protected
+Branch:
+PR:
+Approved scope / evidence:
+Not approved / exclusions:
+Affected systems / environments:
+Acceptance criteria:
+Independent QA assignment / reviewed revision:
+Implementation and test evidence:
+Open risks / decisions:
+Next owner and action:
+Adoption/release record (if applicable):
 
-## Product Goal
-
-## Technical Scope
-
-## Out of Scope
-
-## Routes / Components / Systems Affected
-
-## Data / Security / Integration Impact
-
-## Acceptance Criteria
-
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
-
-## QA Plan
-
-- Manual QA:
-- Automated tests:
-- Regression areas:
-- Failure cases:
-- Security/data/integration checks:
-
-## Approval State
-
-**Approval Required:** Yes / No  
-**Approval Type:** Standing / Batch (incl. SLA) / Delegated Domain / Hard Gate  
-**Decision:** Pending
-
-## Implementation Notes
-
-## QA Review
-
-**QA Verdict:** Pending (Pass / Fail) — `Standard` and `Hard-Gate` tier only; `Micro` tier skips QA.
-
-## Done Decision
-
-**Decision:** Pending  
-**Date:** YYYY-MM-DD
-
-(`Micro` tier: log completion in `ACTIVITY_LOG.md` instead of a separate Done Decision record.)
+Use the core policy and strict JSON handoff for governed/protected execution. A task
+status cannot replace the required approval, review or host lifecycle evidence.
