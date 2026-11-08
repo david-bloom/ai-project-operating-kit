@@ -30,7 +30,17 @@ All five were corrected and regression tests added. The exact-commit re-review o
 `7ee17b9f6fd58d7cfe0cd72b86ad0c05bdf9b702` found three further defects: Git revision
 option injection, committed symlink acceptance on the micro candidate route, and hidden
 worktree/commit byte mismatches. These were corrected with shared safe commit resolution,
-regular-file mode and exact-byte validation, plus regression tests. Final re-review pending.
+regular-file mode and exact-byte validation, plus regression tests.
+
+Final independent verdict: **pass** for exact commit
+`c20ab92fa9830aeab3ba43cf79772c912cb047ca` within the advisory-validator scope.
+The reviewer reran all 53 tests and nine pilot scenarios and separately probed option
+injection (sentinel unchanged), committed symlinks and hidden worktree edits. All eight
+findings are addressed; no blocking findings remain. The subsequent closeout commit only
+records this evidence and release readiness; executable and policy bytes are unchanged.
+
+Review limits: this does not certify authenticated evidence ingestion, deployed host
+protections, concurrent filesystem mutation resistance or consumer/production adoption.
 
 ## Disposable consumer pilot
 
@@ -46,9 +56,11 @@ The pilot does not certify host authentication, protected environments or consum
 ## Execution record
 
 The expanded suite has 53 passing tests and nine passing pilot scenarios locally on
-macOS / Python 3.12. The earlier 50-test revision passed all six native CI combinations
-(Linux/macOS × Python 3.11/3.12/3.13), run 42513799322. Final revision CI and independent
-disposition will be recorded before release.
+macOS / Python 3.12. The exact implementation commit above passed all six native CI combinations
+(Linux/macOS × Python 3.11/3.12/3.13), [run 42513993792](https://github.com/david-bloom/ai-project-operating-kit/actions/runs/42513993792).
+The earlier 50-test revision also passed all six combinations in run 42513799322.
+Final PR checks and the release target are externally recorded on PR #3 and the v3.1.0
+release, rather than asserting a future merge or release in this pre-merge artifact.
 
 This sandbox blocks DNS for Python subprocesses accessing GitHub; the real GitHub branch
 was verified through direct Git and the connector. Local bare-remote tests exercise the

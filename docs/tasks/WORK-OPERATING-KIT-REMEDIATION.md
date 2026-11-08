@@ -1,6 +1,6 @@
 # Operating-kit remediation
 
-Status: In Progress
+Status: Release-ready; publication receipt on v3.1.0; protected Done not inferred
 Owner: David Bloom
 Conductor: Codex
 Tier: Hard-Gate (operating policy and release)
@@ -48,5 +48,12 @@ re-review material changes. GitHub checks must pass before native merge/release.
 Approved: the remediation sequence and its proposed architecture, implementation,
 tests, independent QA, disposable pilot and release preparation/publication.
 Not approved: adopting the result for other projects without their adoption record.
-Next output: reviewable implementation, evidence matrix, pilot report, release and guide.
+Delivered artifacts: implementation, evidence matrix, pilot report and migration/rollback guide.
+Independent QA passed exact implementation c20ab92; 53 tests, nine pilot scenarios and
+six CI combinations passed. See QA_AND_PILOT.md for review scope and limitations.
+Next action at this checkpoint: native PR #3 merge and v3.1.0 publication; their host
+receipts establish completion of those actions without rewriting this pre-merge record.
+Pending decisions: None for the authorized release; any consumer adoption is separately scoped.
+Open risks: authenticated host integration and concurrency protection remain consumer duties.
+Next owner: Codex for publication; project owners only if they elect adoption.
 Live systems checked: GitHub source only. No application live-state claims.
