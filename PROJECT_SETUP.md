@@ -1,122 +1,21 @@
-# Project Setup Checklist
+# Install a pinned operating kit
 
-Use this checklist when installing the AI Project Operating Kit into a new repository.
+1. Choose a released immutable commit/tag and read its BUILD_STATUS and QA evidence.
+2. Keep that checkout/package immutable; do not copy and edit core governance in the consumer.
+3. Copy the JSON examples into the project's own configuration and fill owner, actor surfaces,
+   source repository, allowed output roots, protected paths, risk gates and profile pins.
+4. Pin exact policy bytes and version. Validate with Python 3.11+ (no external libraries).
+5. Protect the authoritative branch: PR-only promotion, required CI, required governance
+   owner review, no agent bypass. Select the exact branch/rules in the host; this kit does
+   not change account settings or claim they already exist.
+6. Trusted CI must load policy/validator/evidence from an owner-approved base snapshot,
+   use authenticated host identity, classify the complete candidate diff and enforce
+   compare-and-set lifecycle updates. Never run candidate code with privileged tokens.
+7. For external actions, provide a project adapter using protected environments and a fresh
+   approval/revocation check immediately before action. Record action ID/outcome. This release
+   supplies policy checks, not deployment/payment runners or authenticated approval ingestion.
+8. Complete a disposable pilot and fresh-context review. Record adoption commit/version,
+   approval, trust setup, pilot evidence and rollback target before calling it adopted.
 
-## 1. Copy Files
-
-Copy:
-
-```text
-docs/team_charter/
-docs/activity_log/
-docs/tasks/
-prompts/
-scripts/
-```
-
-## 2. Replace Placeholders
-
-Search and replace:
-
-```text
-[PROJECT_NAME]
-[OWNER_NAME]
-[PRIMARY_REPO]
-[PRIMARY_STACK]
-[HARD_GATES]
-[STANDING_APPROVALS]
-[TOOLS_OR_SKILLS]
-```
-
-## 3. Confirm Source of Truth
-
-Decide where durable project state lives.
-
-Recommended:
-
-```text
-GitHub docs, task files, issues, PRs, activity log, approvals log, and decisions log.
-```
-
-## 4. Define Roles
-
-At minimum:
-
-```text
-Owner / Final Approver
-Main Conductor
-Implementation Agent
-QA Agent
-UX / Prompt Agent if frontend or design work exists
-```
-
-If the project has more than one functional owner, also consider naming Delegated Domain Approvers (see `docs/team_charter/AI_COLLABORATION_RULES.md`) so routine domain-specific approvals don't all route through the Owner.
-
-## 5. Define Standing Approvals
-
-Pre-approve low-risk recurring work such as:
-
-- Read-only repo checks.
-- Draft task specs.
-- Handoff packets.
-- Read-only tool checks.
-- Draft prompts.
-- QA planning.
-- Documentation-only workflow updates.
-- Any `Micro`-tier task (see step 6).
-
-## 6. Define Task Tiers and Hard Gates
-
-Confirm the project will use the `Micro` / `Standard` / `Hard-Gate` task tiering in `docs/team_charter/AGENT_OPERATING_MODEL.md` — it's what keeps a one-line reversible fix from going through the same ceremony as a production migration.
-
-Define hard gates, at minimum:
-
-- Migrations.
-- Deployments.
-- Secret changes.
-- Payment live-mode changes.
-- Production launch.
-- Risk acceptance.
-- Done decisions.
-- Closing tasks/issues.
-- Material changes to `docs/team_charter/` documents.
-
-Add project-specific risks (e.g. content licensing, regulated data, public claims) as they're identified — this list is a floor, not a ceiling.
-
-## 7. Add Startup Prompts
-
-Give the appropriate prompt from `prompts/` to Claude, Codex, or other agents.
-
-## 8. Wire Up `scripts/verify-sync.sh`
-
-Confirm agents in this project can run shell scripts. `verify-sync.sh` replaces a narrated "synced" claim with an actual check (clean working tree, local HEAD matches the current branch's remote, expected paths present in the latest commit) — use it before reporting sync complete, especially before `Ready for Review` or a `SYNC` response.
-
-## 9. Create First Task
-
-Use:
-
-```text
-docs/tasks/TASK_TEMPLATE.md
-```
-
-Set its `Tier`. Record approval in:
-
-```text
-docs/activity_log/APPROVALS_LOG.md
-```
-
-## 10. Operate
-
-Use handoff packets before:
-
-- Execution.
-- QA.
-- Frontend prompt handoff.
-- Complex delegation.
-- Task owner changes.
-
-Skip the handoff packet for `Micro`-tier work.
-
-## 11. Confirm the Session Close Rule Is Followed
-
-Before ending any session that changed durable state, write an `ACTIVITY_LOG.md` entry (format in that file) — summary, pending decisions, open risks/blockers, next required action — so a brand-new session can pick up without the prior conversation. See `docs/team_charter/AI_COLLABORATION_RULES.md`, Session Close Rule. This is not optional ceremony reserved for `Hard-Gate` work; it applies whenever anything durable changed, at any tier.
+Until steps 5–8 are verified, local passing checks are advisory only. Existing Cramapple
+continues under its installed workflow; installation here does not migrate any consumer.

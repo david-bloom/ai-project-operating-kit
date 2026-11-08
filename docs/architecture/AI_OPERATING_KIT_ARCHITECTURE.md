@@ -1,3 +1,6 @@
+> STATUS: HISTORICAL — superseded by Core Operating Policy 3.1.0 and ENFORCEMENT_CONTRACT.md.
+> The September design below is preserved as rationale, not current execution authority.
+
 # AI Operating Kit — Architecture (design of record)
 
 **Status:** APPROVED architecture (2026-09-21), through v0.3 of the proposal after two external (Codex) review rounds. This is the rationale and layer model; the operative rules live once in `docs/CORE_OPERATING_POLICY.md` (this doc does not restate them).

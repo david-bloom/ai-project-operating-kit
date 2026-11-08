@@ -1,80 +1,40 @@
-# Scripts — the generalized workflow engine (Increment 1b)
+# Read-only commands — 3.1.0
 
-These are the data-driven successors to the Design Studio `scripts/` (`studio.sh`,
-`handoff-check`, `publish`). They enforce `docs/CORE_OPERATING_POLICY.md` and read
-every project-specific parameter from a **project manifest** + the `config/`
-registries — nothing about actors, roles, branches, layout, protection or limits
-is hard-coded.
+Python 3.11+ and Git. No third-party libraries; JSON only. Set OPKIT_PYTHON if `python3`
+is older (macOS may ship 3.9). All validators emit JSON on stdout and errors on stderr.
 
-**Status:** DRAFT (Increment 1b + 2), validated by the conformance suite —
-`tests/run.sh`, **27/27 passing**. It exercises the lifecycle, delivery/landing,
-protection, approval gates, review linkage, tiers, isolation shape, actor
-authority, micro path, version compatibility, manifest staleness, rescue on a
-rejected push, and at-most-once publication. Run it before relying on any change:
-
-```
-tests/run.sh
+```sh
+python3.12 scripts/opkit.py validate --manifest manifest.json --policy-root trusted-checkout --packet packet.json
+python3.12 scripts/opkit.py freeze --manifest manifest.json --policy-root trusted-checkout --packet packet.json
+python3.12 scripts/opkit.py check --manifest manifest.json --policy-root trusted-checkout --packet packet.json --previous authoritative-previous.json --event dispatch --evidence evidence.json --candidate-root candidate-checkout --actor codex --surface local --accepted-outputs accepted-outputs.json
+python3.12 scripts/opkit.py candidate --manifest manifest.json --policy-root trusted-checkout --repo candidate-checkout --base BASE_SHA --head HEAD_SHA --tier governed --accepted-outputs accepted-outputs.json
+python3.12 scripts/opkit.py verify-remote --repo checkout --remote origin --branch codex/work --commit FULL_SHA docs/result.md
 ```
 
-## Files
+`freeze` prints a new packet; the host reviews and records it. `check` proposes a transition;
+it does not mutate state or authorize the supplied identity. `candidate` requires a clean,
+committed checkout, checks the complete diff, and classifies deletions/renames/protected or
+accepted-output changes. `--risks` adds semantic risks. The accepted-output inventory is an
+explicit authoritative JSON list, even when empty. A self-declared low tier is not proof.
 
-| File | Role |
-|---|---|
-| `lib/core.sh` | Shared helpers: the immutable core floor (statuses/lanes/tiers/events/gates), portable wrappers, minimal YAML readers, manifest resolution, header parsing, hashing, source-of-truth helpers. |
-| `handoff-check` | Validate a packet against the policy; `draft → ready` stamps `source_sha`. |
-| `publish` | The **only** writer to the source-of-truth branch: classify → validate → land (direct / auto-merge branch / human-review PR) → regenerate records → push → receipt. |
+`verify-remote` checks the actual remote branch and exact paths at the expected full commit.
+It may fetch Git objects but does not alter working files or branches. No command commits,
+merges, pushes, resets, deploys, charges money, sends email or modifies a live service.
 
-## Running
+`publish` now delegates only to `candidate`. `handoff-check` delegates to `validate`.
+`verify-sync.sh` delegates to `verify-remote`; old positional/current-branch guesses fail.
 
-Every command resolves a manifest first (`--manifest <path>`, or `$MANIFEST`, or
-`./PROJECT_MANIFEST.yaml`). `publish` must run on a checkout of the manifest's
-`source_of_truth.branch` with push rights (the steward's environment).
+Evidence object fields: approvals, revocations (IDs), reviews, provenance (path → source,
+SHA-256, modification=none), related_packets (authoritative predecessor/review targets).
+Approval fields are demonstrated in tests/test_opkit.py and documented in the enforcement
+contract; timestamps require explicit zones and expiry is exclusive. Reviews bind exact
+output hashes and a different context ID; current failing reviews block acceptance.
 
-```
-scripts/handoff-check projects/<slug>/handoff/<NNN>-<role>.md
-scripts/publish <slug>/<NNN> --actor <actor>                 # create on the sot branch
-scripts/publish <slug>/<NNN> --actor <actor> --dispatch --model <id>
-scripts/publish <slug>/<NNN> --actor <actor>                 # land the declared outputs
-scripts/publish <slug>/<NNN> --actor <actor> --set-status accepted|returned
-scripts/publish --regen | --drift
-```
+Trust requirement: host-authenticated evidence and pinned base code, not candidate-controlled
+JSON or a claimed actor string. This library checks structure/consistency; it cannot prove
+human identity, private context isolation or actual repository access settings.
 
-## Format contracts the readers expect
-
-The YAML readers in `lib/core.sh` are minimal and dependency-free (no `yq`), so
-author manifests in this style:
-
-- **Scalars** at column 0 (`project:`) or one 2-space level under a block key
-  (`core:` → `  version:`, `source_of_truth:` → `  branch:`).
-- **Top-level lists** (`protected_paths:`, `hard_gates:`) as block items
-  (`  - '<regex>'`) or an inline `[a, b]`. `[]` = empty.
-- **`required_approvals`** values are inline lists of gate ids:
-  `before_acceptance: [design-signoff]`.
-- **`actors`** as inline flow maps, one surface per row:
-  `- { actor: claude-code, surface: local, delivery: publisher }`.
-- **`profiles`** as 2-space keys: `  design: { version: 1.0 }`.
-
-## Approval records (§8)
-
-Approval gates named in `required_approvals` are satisfied by a record in
-`docs/activity_log/APPROVALS_LOG.md`, one block per approval:
-
-```
-## APPROVAL <handoff-id> <gate-id> — <approver> — <YYYY-MM-DD>
-<one line of context; the Owner records this>
-```
-
-`publish` refuses the gated transition (dispatch / external-action landing /
-acceptance) until a matching record exists on the source-of-truth branch.
-
-## What is generalized vs. the core floor
-
-Resolved from data: policy/core version, actors + surfaces + delivery, roles
-(core registry + profile registries), source-of-truth repo/branch, project
-layout (`paths.projects_root`), protected paths (floor **+** manifest additions,
-monotonic §6), approval gates, size/staleness limits.
-
-Fixed by the policy (the immutable floor, not project-configurable): the status /
-lane / tier / event / gate vocabularies, the lifecycle transitions, the
-protected-path floor (the operating system's own governance always needs review),
-and the "publisher is the only writer" invariant.
+For artifact transitions (land/accept/return/external-action/done), supply --base BASE_SHA
+and --head HEAD_SHA. The clean candidate Git diff must exactly match the packet changes.
+Review handoffs bind review_target (envelope_sha256 and outputs hash map); related_packets
+records include the target packet plus artifact_hashes recorded at delivery.

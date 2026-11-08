@@ -6,6 +6,11 @@ This log records meaningful operating activity, approvals, closeouts, blockers, 
 
 Most recent entries (full chronological list follows below). Once this log grows past a few dozen entries, keep this index to the last ~10 and add a rotation rule: once the log exceeds ~400 lines, archive older entries to `docs/activity_log/archive/ACTIVITY_LOG-<range>.md` and update this index to point at the archive.
 
+- 2026-11-08 — Operating-kit release readiness / session close
+- 2026-11-08 — Operating-kit remediation checkpoint
+
+<!-- INDEX_END -->
+
 ## Entry Format
 
 ```markdown
@@ -37,3 +42,32 @@ Every entry — task-level or session-close — uses this shape. A Session Close
 **Open Risks / Blockers:** None  
 **Next Owner:** [OWNER_NAME]  
 **Next Required Action:** Customize placeholders and approve workflow docs.
+
+## Operating-kit remediation checkpoint — 2026-11-08
+
+**Task:** WORK-OPERATING-KIT-REMEDIATION
+**Status:** In Progress
+**Summary:** Isolated checkout; policy/enforcement design recorded; strict Python validator
+and legacy command retirement implemented. First independent review found five gaps,
+now addressed with regressions. Documentation and disposable pilot are being completed.
+**Pending Decisions:** Consumer adoption remains with each project's owner.
+**Open Risks / Blockers:** Exact-commit QA, CI matrix and release evidence still pending.
+**Next Owner:** Codex conductor
+**Next Required Action:** Complete pilot, independent re-review and native PR checks.
+
+## Operating-kit release readiness / session close — 2026-11-08
+
+**Task:** WORK-OPERATING-KIT-REMEDIATION
+**Status:** Release-ready; host receipts record merge/publication separately
+**Summary:** Replaced privileged publishing with strict read-only validation; consolidated
+policy and added migration guidance. Independent review of c20ab92 passed after eight
+findings were fixed. All 53 tests, nine disposable pilot scenarios and six Linux/macOS
+CI combinations passed. PR #3 carries final closeout checks; v3.1.0 records the immutable
+release target after native merge. No Cramapple adoption or live application changes.
+**Pending Decisions:** None for authorized release; adoption belongs to consuming projects.
+**Open Risks / Blockers:** No open implementation blockers within advisory-validator scope.
+Trusted identity/evidence ingestion, host protections and concurrent-state enforcement
+remain explicit consumer integration requirements.
+**Next Owner:** Codex for native publication; consuming project owners for optional adoption.
+**Next Required Action:** Verify PR #3 merge and v3.1.0 release receipts. If published,
+no further action in this remediation; evaluate adoption only as a separate project task.
