@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "project": "example",
+  "core": {
+    "version": "3.1.0",
+    "path": "docs/CORE_OPERATING_POLICY.md",
+    "sha256": "60824d98363a831e0559c64b524ffb7e8989634688a24b3551292a308517bc25"
+  },
+  "source_of_truth": {
+    "repo": "owner/example",
+    "branch": "main"
+  },
+  "owner": {
+    "name": "david",
+    "surface": "human"
+  },
+  "orchestrator": {
+    "name": "codex",
+    "surface": "local"
+  },
+  "steward": {
+    "name": "bot",
+    "surface": "ci"
+  },
+  "actors": [
+    {
+      "name": "david",
+      "surface": "human",
+      "roles": [
+        "owner"
+      ],
+      "delivery": "branch",
+      "authority": "full"
+    },
+    {
+      "name": "codex",
+      "surface": "local",
+      "roles": [
+        "orchestrator",
+        "worker"
+      ],
+      "delivery": "branch",
+      "authority": "full"
+    },
+    {
+      "name": "codex",
+      "surface": "cloud",
+      "roles": [
+        "worker"
+      ],
+      "delivery": "branch",
+      "authority": "none"
+    },
+    {
+      "name": "bot",
+      "surface": "ci",
+      "roles": [
+        "steward"
+      ],
+      "delivery": "publisher",
+      "authority": "full"
+    },
+    {
+      "name": "reviewer",
+      "surface": "fresh",
+      "roles": [
+        "reviewer"
+      ],
+      "delivery": "branch",
+      "authority": "none"
+    }
+  ],
+  "defaults": {
+    "tier": "governed",
+    "isolation": "open"
+  },
+  "allowed_outputs": [
+    "examples",
+    "src",
+    "docs",
+    "scripts"
+  ],
+  "protected_paths": [
+    "src/locked/*"
+  ],
+  "hard_gates": [],
+  "profiles": []
+}

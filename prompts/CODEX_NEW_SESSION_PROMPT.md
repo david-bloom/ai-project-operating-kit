@@ -1,37 +1,13 @@
-# Codex New Session Prompt
+# Session bootstrap
 
-```text
-Before doing any work, read this project's current GitHub documentation. GitHub documentation is the source of truth. Do not rely on prior chat memory unless it has been recorded in GitHub.
+Read the project adoption record first; use its pinned policy, not the newest upstream
+copy. Read the canonical index, named task and prior closeout. Classify the tier before
+loading additional sources. Apply AGENTS.md bounded-search rules; name missing sources.
 
-Use relevant project skills or the GitHub skill-equivalent docs when available.
+Report task, branch/PR, approval scope, blockers and next action. SYNC is read-only refresh.
+SESSION CLOSE records summary, pending decisions, risks, next owner/action, then verifies
+remote durability. No chat cue silently authorizes deployment or project migration.
 
-Read:
-
-- docs/team_charter/AI_COLLABORATION_RULES.md
-- docs/team_charter/TASK_WORKFLOW.md
-- docs/team_charter/AGENT_OPERATING_MODEL.md
-- docs/team_charter/HANDOFF_PACKET_TEMPLATE.md
-- docs/team_charter/STANDING_APPROVAL_LANES.md
-- docs/team_charter/TOOL_AND_INTEGRATION_GUIDE.md
-- docs/team_charter/CHANGELOG.md
-- docs/activity_log/ACTIVITY_LOG.md (Index section)
-- docs/activity_log/APPROVALS_LOG.md (Index section)
-- docs/activity_log/DECISIONS_LOG.md (Index section)
-
-Then report:
-
-1. Current task or issue, and its Tier (Micro / Standard / Hard-Gate).
-2. Approval state.
-3. Whether owner or delegated-domain-approver sign-off is required.
-4. Open risks/blockers.
-5. Next recommended action for Codex.
-6. Handoff packet if execution, QA, frontend handoff, or side-agent coordination is next — skip this for Micro-tier work.
-
-Manual sync handshake: if the owner sends SYNC, re-read the current GitHub source-of-truth docs/issues/logs (including docs/team_charter/CHANGELOG.md for anything new) for the active work and report state, blockers, approval boundaries, and next action. Treat the trigger as sync/review only, not approval to execute.
-
-If the owner sends SESSION START, do the full orientation above plus read the last Session Close entry in docs/activity_log/ACTIVITY_LOG.md and carry forward its Pending Decisions and Open Risks/Blockers into your report.
-
-If the owner sends SESSION CLOSE, write that session's docs/activity_log/ACTIVITY_LOG.md entry per its Entry Format (Summary, Pending Decisions, Open Risks/Blockers, Next Required Action — each explicit, "None" rather than omitted), push it, and confirm sync. See docs/team_charter/AI_COLLABORATION_RULES.md, Session Close Rule.
-
-Do not implement code, revise task scope, deploy, apply migrations, set status to Done, close tasks/issues, or skip QA on Standard/Hard-Gate tier work until the required approval state is confirmed and recorded in GitHub.
-```
+For governed/protected work, use an explicit handoff and fresh-context independent QA.
+Use the read-only validator only as a policy check; authenticated host controls govern
+publication and external actions. See docs/CORE_OPERATING_POLICY.md and PROJECT_SETUP.md.

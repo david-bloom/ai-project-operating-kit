@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "example/001",
+  "task": "WORK-EXAMPLE",
+  "actor": {
+    "name": "codex",
+    "surface": "local"
+  },
+  "context_id": "implementation-1",
+  "lane": "routine",
+  "tier": "governed",
+  "status": "draft",
+  "isolation": {
+    "mode": "open",
+    "withhold": [],
+    "lift_when": null
+  },
+  "inputs": {
+    "README.md": "f0ca375d684429afdab9f07ab6dd3ec9d5ac05724797b1cd0362760cc4fa5d86"
+  },
+  "outputs": [
+    "examples/result.md"
+  ],
+  "changes": [
+    {
+      "path": "examples/result.md",
+      "operation": "add"
+    }
+  ],
+  "risks": [],
+  "required_reviews": "independent",
+  "review_of": null,
+  "review_target": null,
+  "supersedes": null,
+  "revises": null,
+  "required_approvals": {
+    "dispatch": [],
+    "land": [],
+    "accept": [],
+    "external-action": [],
+    "done": []
+  },
+  "environment": "development",
+  "action": "produce-result",
+  "instructions": "Produce the declared example result from the pinned README input.",
+  "amendments": []
+}

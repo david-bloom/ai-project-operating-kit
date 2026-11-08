@@ -6,6 +6,10 @@ This log records meaningful operating activity, approvals, closeouts, blockers, 
 
 Most recent entries (full chronological list follows below). Once this log grows past a few dozen entries, keep this index to the last ~10 and add a rotation rule: once the log exceeds ~400 lines, archive older entries to `docs/activity_log/archive/ACTIVITY_LOG-<range>.md` and update this index to point at the archive.
 
+- 2026-11-08 — Operating-kit remediation checkpoint
+
+<!-- INDEX_END -->
+
 ## Entry Format
 
 ```markdown
@@ -37,3 +41,15 @@ Every entry — task-level or session-close — uses this shape. A Session Close
 **Open Risks / Blockers:** None  
 **Next Owner:** [OWNER_NAME]  
 **Next Required Action:** Customize placeholders and approve workflow docs.
+
+## Operating-kit remediation checkpoint — 2026-11-08
+
+**Task:** WORK-OPERATING-KIT-REMEDIATION
+**Status:** In Progress
+**Summary:** Isolated checkout; policy/enforcement design recorded; strict Python validator
+and legacy command retirement implemented. First independent review found five gaps,
+now addressed with regressions. Documentation and disposable pilot are being completed.
+**Pending Decisions:** Consumer adoption remains with each project's owner.
+**Open Risks / Blockers:** Exact-commit QA, CI matrix and release evidence still pending.
+**Next Owner:** Codex conductor
+**Next Required Action:** Complete pilot, independent re-review and native PR checks.
